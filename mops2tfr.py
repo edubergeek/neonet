@@ -9,25 +9,20 @@ import tensorflow as tf
 
 dirsep = '/'
 csvdelim = ','
-basePath="/data/nmops20.0/data/mops/deeplearning/TestQuad/20180518.r40242/CurtsInputs/flattened"
+basePath="../data/testquad6370"
 imageText = "image"
 inputText = "in"
 outputText = "out"
-trainCSV = "./neonet.csv"
+#trainCSV = "./neonet.csv"
+
+# size of object postage stamp cutout in pixels
 xdim=32
 ydim=32
 
-XDim=875
-YDim=512
-ZDim=4
-
-WDim=9
-WStart=0
-WStep=5
-
+# percentage of total that are held out test examples 
 pTest = 0.1
+# percentage of total that are validation examples 
 pVal = 0.1
-nClone=10
 
 train_filename = '../data/train.tfr'  # the TFRecord file containing the training set
 val_filename = '../data/val.tfr'      # the TFRecord file containing the validation set
