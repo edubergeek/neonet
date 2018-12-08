@@ -9,7 +9,7 @@ import tensorflow as tf
 
 dirsep = '/'
 csvdelim = ','
-basePath="../data/testquad6370"
+basePath="/data/nmops20.0/data/testquad6370/CurtsInputs/flattened"
 imageText = "image"
 inputText = "in"
 outputText = "out"
@@ -114,13 +114,14 @@ def process_sp3d(basePath):
     # read the truth table from the "out" file
     yName=basePath+dirsep+pointing+dirsep+outputText
     Y=np.genfromtxt(yName, delimiter=",", skip_header=1, usecols=(0,1),names=('detID','actual'))
+    Y=np.atleast_1d(Y)
   
-    detection=np.genfromtxt(inName, delimiter=",", skip_header=1, usecols=(0,60,61),names=('detID','x','y'))
-    print('Shape of detection: %s'%(detection.shape))
+    detection=np.ndfromtxt(inName, delimiter=",", skip_header=1, usecols=(0,60,61),names=('detID','x','y'))
+    detection=np.atleast_1d(detection)
     for det in detection:
       # for each detection retrieve the 
       print('DetID %d x,y = (%f,%f)'%(det[0], det[1], det[2]))
-      stamp, xstamp, ystamp = postage_stamp(imageData[:,:,0], det[1], det[2], xdim, ydim)
+      stamp, xstamp, ystamp = postage_stamp(imageData[:,:], det[1], det[2], xdim, ydim)
       # unroll the 2D postage stamp into a vector
       #plt.imshow(stamp)
       #plt.show()
@@ -179,7 +180,9 @@ for name, isNEO, image, detID, params in process_sp3d(basePath):
   print(name, isNEO, detID)
   xa=np.reshape(image,(xdim*ydim))
   ya = (isNEO == 'Y') * 1.0
-  feature = {'detID': _bytes_feature(detID), 'isNEO': _float_feature(ya), 'cutout': _floatvector_feature(xa.tolist()), 'params': _floatvector_feature(params.tolist())}
+  dID = detID.astype(bytes)
+  feature = {'detID': _bytes_feature(dID), 'isNEO': _float_feature(ya), 'cutout': _floatvector_feature(xa.tolist()), 'params': _floatvector_feature(params.tolist())}
+  #feature = {'detID': _bytes_feature(np.fromstring(detID, dtype=bytes, count=detID, sep='.')), 'isNEO': _float_feature(ya), 'cutout': _floatvector_feature(xa.tolist()), 'params': _floatvector_feature(params.tolist())}
   # Create an example protocol buffer
   example = tf.train.Example(features=tf.train.Features(feature=feature))
   nExamples += 1
