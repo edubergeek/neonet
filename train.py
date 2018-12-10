@@ -12,12 +12,13 @@ from tensorflow.keras import backend as K
 XDim=32
 YDim=32
 ZDim=1
+PDim=3
 
-sizeBatchTrain=64
-sizeBatchValid=64
-nEpochs=50
-nExamples=1000
-sizeShuffle=512
+sizeBatchTrain=128
+sizeBatchValid=1000
+nEpochs=100
+nExamples=23187
+sizeShuffle=1024
 
 pathTrain = '../data/train.tfr'  # The TFRecord file containing the training set
 pathValid = '../data/val.tfr'    # The TFRecord file containing the validation set
@@ -53,8 +54,8 @@ def CNN2D():
   flat4 = Flatten()(pool4)
 
   fc5 = Dense(256, activation='relu')(flat4)
-  fc6 = Dense(512, activation='relu')(fc5)
-  predict = Dense(1, activation = 'softmax')(fc6)
+  fc6 = Dense(1024, activation='relu')(fc5)
+  predict = Dense(1, activation = 'sigmoid')(fc6)
 
   model = Model(inputs=[inputs], outputs=[predict])
 
@@ -66,10 +67,10 @@ def CNN2D():
 def train():
   K.set_image_data_format('channels_last')  # TF dimension ordering in this code
   featdef = {
-    #'detID': tf.FixedLenSequenceFeature(shape=[], dtype=tf.string, allow_missing=True),
-    'isNEO': tf.FixedLenSequenceFeature(shape=[1], dtype=tf.float32, allow_missing=True),
-    'cutout': tf.FixedLenSequenceFeature(shape=[], dtype=tf.float32, allow_missing=True)
-    #'params': tf.FixedLenSequenceFeature(shape=[], dtype=tf.float32, allow_missing=True)
+    'detID': tf.FixedLenFeature(shape=[], dtype=tf.string),
+    'isNEO': tf.FixedLenFeature(shape=[], dtype=tf.float32),
+    'cutout': tf.FixedLenFeature(shape=[YDim*XDim], dtype=tf.float32),
+    'params': tf.FixedLenFeature(shape=[PDim], dtype=tf.float32),
     }
         
   def _parse_record(example_proto, clip=False):
@@ -78,6 +79,7 @@ def train():
     #x = tf.decode_raw(example['cutout'], tf.float32)
     # unroll into a 2D array
     x = example['cutout']
+    #x = x[0]
     x = tf.reshape(x, (YDim, XDim, 1))
     
     y = example['isNEO']
@@ -85,7 +87,8 @@ def train():
     #y = tf.reshape(y, (1,1))
     #y = tf.cast(y, tf.float32)
     #y = tf.reshape(y, (1,1))
-    y = y[0]
+    #y = y[0]
+    #y = tf.cast(np.random.randint(0,1)*1.0, tf.float32)
 
     return x, y
 
@@ -113,16 +116,15 @@ def train():
 
   callbacks = [
       tf.keras.callbacks.ModelCheckpoint(pathWeight, verbose=1, save_best_only=True),
-      tf.keras.callbacks.TensorBoard(log_dir='../logs')
+      tf.keras.callbacks.TensorBoard(log_dir='../logs', write_images = True)
   ]
+      #tf.keras.callbacks.TensorBoard(log_dir='../logs', write_images = True )
 
   print('-'*30)
   print('Fitting model...')
   print('-'*30)
 
-  #print(dsTrain)
   history = model.fit(dsTrain, validation_data=dsValid, validation_steps=1, steps_per_epoch=int(np.ceil(nExamples/sizeBatchTrain)), epochs=nEpochs, verbose=1, callbacks=callbacks)
-  #history = model.fit(dsTrain, validation_data=dsValid, epochs=nEpochs, verbose=1, callbacks=callbacks)
 
   # serialize model to JSON
   model_serial = model.to_json()
