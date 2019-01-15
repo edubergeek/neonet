@@ -59,6 +59,8 @@ for path in fsDetection.walk.files(filter=[inputText]):
   imageFile=byteArray.decode()
   print("Opening image file %s"%(imageFile))
   height, width, imageMeta, imageData = load_fits(imageFile)
+
+
   # now the pixels are in the array imageData shape height X width X 1
   # read the truth table from the "out" file
   yName=basePath+dirsep+pointing+dirsep+outputText
