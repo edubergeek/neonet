@@ -121,7 +121,6 @@ def process_sp3d(basePath):
     detection=np.atleast_1d(detection)
     for det in detection:
       # for each detection retrieve the 
-      print('DetID %f x,y = (%f,%f)'%(det[0], det[1], det[2]))
       stamp, xstamp, ystamp = postage_stamp(imageData[:,:], det[1], det[2], xdim, ydim)
       # unroll the 2D postage stamp into a vector
       #plt.imshow(stamp)
@@ -137,6 +136,7 @@ def process_sp3d(basePath):
       y=Y[0]
       detID=y[0]
       actual=y[1]
+      print('DetID %f x,y = (%f,%f): %f'%(det[0], det[1], det[2], actual))
       # det is the warp warp diff image parameter vector from IPP
       #values=[detID, actual]
       #values=np.concatenate((values, stamp))
