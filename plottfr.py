@@ -12,8 +12,8 @@ pathTrain = '../data/train.tfr'  # The TFRecord file containing the training set
 pathValid = '../data/val.tfr'    # The TFRecord file containing the validation set
 pathTest = '../data/test.tfr'    # The TFRecord file containing the test set
 
-batchSize=10
-batchN=10000
+batchSize=20
+batchN=1
 
 with tf.Session() as sess:
     feature = {
@@ -57,18 +57,19 @@ with tf.Session() as sess:
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
 
-    #plt.gray()
+    plt.gray()
     # Now we read batches of images and labels and plot them
     for batch_index in range(batchN):
         detID, actual, image, params = sess.run([ID, Y, X, P])
         for m in range(batchSize):
             #print(detID[m])
-            print(actual[m])
+            print("Detection %.0f y=%f,x=%f"%(params[m,0],params[m,1],params[m,2]))
+            #print(actual[m])
             #print(params[m])
             #print(image.shape)
-            #img = np.reshape(image[m], (YDim, XDim))
-            #plt.imshow(img)
-            #plt.show()
+            img = np.reshape(image[m], (YDim, XDim))
+            plt.imshow(img)
+            plt.show()
 
 
     # Stop the threads
